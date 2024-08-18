@@ -5,6 +5,7 @@ import { config } from 'dotenv';
 import cookieParser from 'cookie-parser';
 import verifyToken from './middleware/verifyToken.js';
 import generateToken from './utils/generateToken.js'
+import { getSession } from '@auth/express'
 
 config()
 
@@ -82,8 +83,20 @@ app.post('/new', async (req, res) => {
     }
 })
 
-app.get('/auth/resource', verifyToken, (req, res) => {
+app.get('/auth/resource', async (req, res) => {
     try {
+        const session = await getSession(req, {
+            providers: []
+        })
+
+        // console.log(session.user);
+
+        if (!session) {
+            return res
+                .status(401)
+                .json({ message: "Unauthenticated" })
+        }
+
         res
             .status(200)
             .json({ message: "Secret Message" })
